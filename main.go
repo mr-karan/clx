@@ -9,16 +9,18 @@ import (
 	"strings"
 
 	"github.com/ollama/ollama/api"
+	"github.com/urfave/cli/v2"
 )
 
-func getSystemPrompt() string {
+func getSystemPrompt(model string) string {
 	systemInfo := fmt.Sprintf("OS: %s, Arch: %s", runtime.GOOS, runtime.GOARCH)
 	prompt := fmt.Sprintf(`
 		You are CLX, a CLI code generator. Respond with the CLI command to generate the code with only one short sentence description in first line.
 		If the user asks for a specific language, respond with the CLI command to generate the code in that language.
 		If CLI command is multiple lines, separate each line with a newline character.
-		Do not write any markdown. Do not write any code.
+		Do not write any markdown. Do not write any code. No lengthy explanations either. Be concise and terse.
 		System Info: %s
+		Model: %s
 
 		First line is the description in one sentence.
 		Example output:
@@ -26,31 +28,25 @@ func getSystemPrompt() string {
 		Building and installing a Go binary
 		go build main.go
 		go install main
-	`, systemInfo)
+	`, systemInfo, model)
 
 	return prompt
 }
 
-func askAI(phrase string) error {
+func askAI(phrase string, model string) error {
 	client, err := api.ClientFromEnvironment()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	messages := []api.Message{
-		api.Message{
-			Role:    "system",
-			Content: getSystemPrompt(),
-		},
-		api.Message{
-			Role:    "user",
-			Content: phrase,
-		},
+		{Role: "system", Content: getSystemPrompt(model)},
+		{Role: "user", Content: phrase},
 	}
 
 	ctx := context.Background()
 	req := &api.ChatRequest{
-		Model:    "llama3",
+		Model:    model,
 		Messages: messages,
 	}
 
@@ -59,23 +55,19 @@ func askAI(phrase string) error {
 		lines := strings.Split(content, "\n")
 		firstLine := true
 
-		for i, line := range lines {
+		for _, line := range lines {
 			if line != "" {
 				if firstLine {
-					fmt.Printf("\x1b[1;35m%s\x1b[0m", line)
+					fmt.Printf("\x1b[1;35m%s\x1b[0m", line) // Print first line in purple
+					firstLine = false
 				} else {
-					fmt.Print(line)
+					fmt.Printf("\n\x1b[1;32m$ \x1b[0m%s", line) // Print subsequent lines with green prompt
 				}
 			}
+		}
 
-			if !firstLine && len(lines) > 1 && i != 0 {
-				fmt.Print("\n\x1b[1;32m$ \x1b[0m")
-			}
-
-			if firstLine && len(lines) > 1 {
-				fmt.Print("\n")
-				firstLine = false
-			}
+		if len(lines) > 1 {
+			fmt.Println() // Ensure ending on a new line
 		}
 
 		return nil
@@ -87,12 +79,29 @@ func askAI(phrase string) error {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: clx <prompt>")
-		os.Exit(1)
+	app := &cli.App{
+		Name:  "clx",
+		Usage: "a CLI code generator",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "model",
+				Value:   "llama3",
+				Usage:   "Model to use for generating responses",
+				Aliases: []string{"m"},
+			},
+		},
+		Action: func(c *cli.Context) error {
+			phrase := strings.Join(c.Args().Slice(), " ") // Join all arguments into a single string
+			if phrase == "" {
+				cli.ShowAppHelpAndExit(c, 1)
+			}
+			model := c.String("model")
+			return askAI(phrase, model)
+		},
 	}
-	phrase := strings.Join(os.Args[1:], " ")
-	if err := askAI(phrase); err != nil {
+
+	err := app.Run(os.Args)
+	if err != nil {
 		log.Fatal(err)
 	}
 }

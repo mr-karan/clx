@@ -72,6 +72,7 @@ func askAI(phrase string, model string) error {
 
 		return nil
 	})
+	fmt.Println()
 	if err != nil {
 		return err
 	}

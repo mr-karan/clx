@@ -17,7 +17,7 @@ func getSystemPrompt(model string) string {
 	prompt := fmt.Sprintf(`
 		You are CLX, a CLI code generator. Respond with the CLI command to generate the code with only one short sentence description in first line.
 		If the user asks for a specific language, respond with the CLI command to generate the code in that language.
-		If CLI command is multiple lines, separate each line with a newline character.
+		If CLI command is multiple lines, MUST separate each line with a newline character.
 		Do not write any markdown. Do not write any code. No lengthy explanations either. Be concise and terse.
 		System Info: %s
 		Model: %s
@@ -44,13 +44,16 @@ func askAI(phrase string, model string) error {
 		{Role: "user", Content: phrase},
 	}
 
+	stream := false
+
 	ctx := context.Background()
 	req := &api.ChatRequest{
 		Model:    model,
 		Messages: messages,
+		Stream:   &stream,
 	}
 
-	err = client.Chat(ctx, req, func(resp api.ChatResponse) error {
+	if err := client.Chat(ctx, req, func(resp api.ChatResponse) error {
 		content := resp.Message.Content
 		lines := strings.Split(content, "\n")
 		firstLine := true
@@ -71,11 +74,10 @@ func askAI(phrase string, model string) error {
 		}
 
 		return nil
-	})
-	fmt.Println()
-	if err != nil {
+	}); err != nil {
 		return err
 	}
+
 	return nil
 }
 

@@ -8,6 +8,13 @@ This project is an adaption of [Shayan's clx](https://gist.github.com/Sh4yy/3941
 
 You can use `--model` (`-m`) flag to specify the model name. Defaults to `llama3`.
 
+## Install
+
+
+### Binary
+
+Download the latest binary from [Releases].
+
 ## Example Usage
 
 ```sh

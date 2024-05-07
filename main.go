@@ -7,9 +7,15 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/ollama/ollama/api"
 	"github.com/urfave/cli/v2"
+)
+
+var (
+	version = ""
+	timeout = time.Second * 30
 )
 
 func getSystemPrompt(model string) string {
@@ -46,7 +52,9 @@ func askAI(phrase string, model string) error {
 
 	stream := false
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
 	req := &api.ChatRequest{
 		Model:    model,
 		Messages: messages,
@@ -83,8 +91,9 @@ func askAI(phrase string, model string) error {
 
 func main() {
 	app := &cli.App{
-		Name:  "clx",
-		Usage: "a CLI code generator",
+		Name:    "clx",
+		Usage:   "a CLI code generator",
+		Version: version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "model",

@@ -23,13 +23,19 @@ go install github.com/mr-karan/clx@latest
 ## Example Usage
 
 ```sh
-➜ clx show disk usage of current directory
+❯ clx show disk usage of current directory
 Displaying disk usage for the current directory
-du -sh .%
+$ du -sh .
 ```
 
 ```sh
-➜ clx use imagemagick to convert jpg to png and optimize for web usage
+❯ clx use imagemagick to convert jpg to png and optimize for web usage
 Converting JPEG images to PNG format with compression
-convert -resize 50% input.jpg output.png && convert -trim -quality 75 -define jpeg:extent=1024 output.png output_optimized.png
+$ convert -resize 50% input.jpg output.png && convert -trim -quality 75 -define jpeg:extent=1024 output.png output_optimized.png
+```
+
+```sh
+➜ clx find out top 10 IPs in the nginx access log file
+Viewing Top 10 Client IPs from Nginx Access Log
+$ cat /var/log/nginx/access.log | awk '{print $1}' | sort | uniq -c | sort -rnk 1 | head -n 10
 ```

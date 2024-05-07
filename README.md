@@ -10,10 +10,15 @@ You can use `--model` (`-m`) flag to specify the model name. Defaults to `llama3
 
 ## Install
 
-
 ### Binary
 
-Download the latest binary from [Releases].
+Download the latest binary from [Releases](https://github.com/mr-karan/clx/releases).
+
+### Go
+
+```bash
+go install github.com/mr-karan/clx@latest
+```
 
 ## Example Usage
 

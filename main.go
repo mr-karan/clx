@@ -59,6 +59,12 @@ func askAI(phrase string, model string) error {
 		Model:    model,
 		Messages: messages,
 		Stream:   &stream,
+		Options: map[string]interface{}{
+			"seed":        42,
+			"temperature": 0.2,
+			"top_k":       10,
+			"top_p":       0.5,
+		},
 	}
 
 	if err := client.Chat(ctx, req, func(resp api.ChatResponse) error {

@@ -109,6 +109,10 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
+			if c.Bool("version") {
+				fmt.Println(version)
+				return nil
+			}
 			phrase := strings.Join(c.Args().Slice(), " ") // Join all arguments into a single string
 			if phrase == "" {
 				cli.ShowAppHelpAndExit(c, 1)
@@ -117,7 +121,6 @@ func main() {
 			return askAI(phrase, model)
 		},
 	}
-
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)

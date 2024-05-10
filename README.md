@@ -2,12 +2,7 @@
 
 clx is a useful utility that generates CLI commands using AI models for common operational tasks. It's inspired by [Shayan's clx](https://gist.github.com/Sh4yy/3941bf5014bc8c980fad797d85149b65) and enhanced to support configurable models and multiple backends including [Groq](https://groq.com/) and [OpenAI](https://openai.com/).
 
-
-![](./docs/clx.gif)
-
-This project is inspired from [Shayan's clx](https://gist.github.com/Sh4yy/3941bf5014bc8c980fad797d85149b65) utility. I've ported it to add configurable models and different backends. Currently supports Groq and OpenAI.
-
-You can use `--model` (`-m`) flag to specify the model name. Defaults to `llama3`.
+![](./docs/clx_v1.gif)
 
 ## Install
 
@@ -24,21 +19,42 @@ go install github.com/mr-karan/clx@latest
 ## Example Usage
 
 ```sh
-❯ clx show disk usage of current directory
-Displaying disk usage for the current directory
+➜ clx show disk usage of current directory
+Showing disk usage of the current directory
 $ du -sh .
 ```
 
 ```sh
-❯ clx use imagemagick to convert jpg to png and optimize for web usage
-Converting JPEG images to PNG format with compression
-$ convert -resize 50% input.jpg output.png && convert -trim -quality 75 -define jpeg:extent=1024 output.png output_optimized.png
+➜ clx kill process on port 8000
+Kill process running on port 8000.
+$ lsof -t -i :8000 | xargs kill -9
 ```
 
 ```sh
-➜ clx find out top 10 IPs in the nginx access log file
-Viewing Top 10 Client IPs from Nginx Access Log
-$ cat /var/log/nginx/access.log | awk '{print $1}' | sort | uniq -c | sort -rnk 1 | head -n 10
+➜ clx backup a directory
+Backup a directory to a tarball archive
+$ tar -czf backup.tar.gz /path/to/directory
+```
+
+## Usage
+
+```
+➜ clx
+NAME:
+   clx - a CLI code generator
+
+USAGE:
+   clx [global options] command [command options]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --model value, -m value    Model to use for generating responses (default: "gpt-4-turbo")
+   --backend value            Backend service to use (openai, groq) (default: "openai")
+   --timeout value, -t value  Timeout for API requests (default: 30s)
+   --config value, -c value   Path to config file
+   --help, -h                 show help
 ```
 
 ## Configuration

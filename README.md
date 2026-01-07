@@ -1,8 +1,22 @@
 # clx
 
-clx is a useful utility that generates CLI commands using AI models for common operational tasks. It's inspired by [Shayan's clx](https://gist.github.com/Sh4yy/3941bf5014bc8c980fad797d85149b65) and enhanced to support configurable models and multiple backends including [Groq](https://groq.com/) and [OpenAI](https://openai.com/).
+Turn natural language into ready-to-use terminal commands with AI.
 
-![](./docs/clx_v1.gif)
+## Examples
+
+```sh
+$ clx show disk usage of current directory
+Showing disk usage of the current directory
+$ du -sh .
+
+$ clx kill process on port 8000
+Kill process running on port 8000
+$ lsof -t -i :8000 | xargs kill -9
+
+$ clx find all rust files modified in the last week
+Find Rust files modified in the last 7 days
+$ find . -name "*.rs" -mtime -7
+```
 
 ## Install
 
@@ -10,61 +24,111 @@ clx is a useful utility that generates CLI commands using AI models for common o
 
 Download the latest binary from [Releases](https://github.com/mr-karan/clx/releases).
 
-### Go
+### Cargo
 
 ```bash
-go install github.com/mr-karan/clx@latest
+cargo install clx
 ```
 
-## Example Usage
+### Build from source
 
-```sh
-➜ clx show disk usage of current directory
-Showing disk usage of the current directory
-$ du -sh .
-```
-
-```sh
-➜ clx kill process on port 8000
-Kill process running on port 8000.
-$ lsof -t -i :8000 | xargs kill -9
-```
-
-```sh
-➜ clx backup a directory
-Backup a directory to a tarball archive
-$ tar -czf backup.tar.gz /path/to/directory
+```bash
+git clone https://github.com/mr-karan/clx
+cd clx
+cargo build --release
 ```
 
 ## Usage
 
 ```
-➜ clx
-NAME:
-   clx - a CLI code generator
+clx [OPTIONS] [QUERY]...
+clx configure
+```
 
-USAGE:
-   clx [global options] command [command options]
+### Options
 
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
+| Flag | Description |
+|------|-------------|
+| `-p, --provider <PROVIDER>` | AI provider (openai, groq, claude, ollama, openrouter, deepseek, gemini, xai) |
+| `-m, --model <MODEL>` | Model to use (overrides config) |
+| `-t, --timeout <TIMEOUT>` | Request timeout in seconds |
+| `-c, --config <PATH>` | Path to config file |
+| `-h, --help` | Show help |
+| `-V, --version` | Show version |
 
-GLOBAL OPTIONS:
-   --model value, -m value    Model to use for generating responses (default: "gpt-4-turbo")
-   --backend value            Backend service to use (openai, groq) (default: "openai")
-   --timeout value, -t value  Timeout for API requests (default: 30s)
-   --config value, -c value   Path to config file
-   --help, -h                 show help
+### Input Methods
+
+```sh
+# Direct query
+$ clx list all docker containers
+
+# Interactive prompt (no arguments)
+$ clx
+? What command do you need? █
+
+# Pipe from stdin
+$ echo "compress all jpg files" | clx
+
+# Combine args with stdin
+$ echo "in the current directory" | clx find large files
 ```
 
 ## Configuration
 
-`clx` can be configured using a config.toml file, which allows users to set default values for the backend service, model, and request timeout. Here’s an example of what the config.toml might look like:
+### Interactive Setup
 
-```toml
-backend = "groq" # Backend service (openai, groq)
-model = "llama3-70b-8192" # Model to use
-timeout = "30s" # Timeout for API requests
+```bash
+$ clx configure
 ```
 
-This file is read at runtime, and its settings are applied unless overridden by command-line flags. If the file does not exist, clx will create a default one using built-in settings. The file is located at `$HOME/clx.toml`.
+This prompts you to select a provider, enter your API key, and choose a model.
+
+### Manual Configuration
+
+Create `~/.config/clx/config.json`:
+
+```json
+{
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "api_key": "sk-..."
+}
+```
+
+All fields are optional. You can also use environment variables for API keys.
+
+### Environment Variables
+
+Set your API key as an environment variable instead of storing it in the config file:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+export GROQ_API_KEY="gsk_..."
+```
+
+## Providers
+
+| Provider | Default Model | Environment Variable |
+|----------|---------------|---------------------|
+| openai | gpt-4o-mini | `OPENAI_API_KEY` |
+| groq | llama-3.3-70b-versatile | `GROQ_API_KEY` |
+| claude | claude-sonnet-4-20250514 | `ANTHROPIC_API_KEY` |
+| ollama | llama3.2 | (none - runs locally) |
+| openrouter | anthropic/claude-sonnet-4 | `OPENROUTER_API_KEY` |
+| deepseek | deepseek-chat | `DEEPSEEK_API_KEY` |
+| gemini | gemini-2.0-flash | `GEMINI_API_KEY` |
+| xai | grok-3-mini-fast | `XAI_API_KEY` |
+
+### Using a Different Provider
+
+```sh
+# One-off with a different provider
+$ clx -p groq show memory usage
+
+# Use a specific model
+$ clx -p openai -m gpt-4o list running processes
+```
+
+## License
+
+MIT

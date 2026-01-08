@@ -3,14 +3,20 @@ use crate::prompt::{CommandResult, Prompt};
 use crate::provider::Provider;
 use colored::Colorize;
 use spinoff::{spinners, Color, Spinner};
+use std::io::IsTerminal;
 
 pub async fn execute(provider: &Provider, query: &str) -> Result<()> {
-    let mut spinner = Spinner::new(spinners::Dots, "Generating...".to_string(), Color::Blue);
+    let is_tty = std::io::stdout().is_terminal();
+    let mut spinner = is_tty.then(|| {
+        Spinner::new(spinners::Dots, "Generating...".to_string(), Color::Blue)
+    });
 
     let prompt = Prompt::new(query);
     let response = provider.generate(prompt).await?;
 
-    spinner.clear();
+    if let Some(ref mut s) = spinner {
+        s.clear();
+    }
 
     match CommandResult::parse(&response) {
         Some(result) => print_result(&result),

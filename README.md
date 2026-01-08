@@ -27,7 +27,7 @@ Download the latest binary from [Releases](https://github.com/mr-karan/clx/relea
 ### Cargo
 
 ```bash
-cargo install clx
+cargo install --git https://github.com/mr-karan/clx
 ```
 
 ### Build from source
